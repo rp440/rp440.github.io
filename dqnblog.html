@@ -218,14 +218,30 @@
             <p><strong>Are we stable?</strong></p>
             <img src="images/DQN/stable-the-environment.jpg" alt="Relationship meme - Are we stable?" style="display: block; margin: 1rem auto; max-width: 100%;">
 
+            <p>
+                A few other numbers:
+                - Replay buffer size: Usually 100,000 experiences (depends on your memory constraints)
+                - Learning rate: Start with 0.001 (the classic default)
+                - Epsilon: Start at 1.0 and decay to 0.01 over training
+                - Discount factor (gamma): 0.99 should works for most problems
+
+            </p>
             <h2>Experience Replay Buffer</h2>
-            <p>Think about how our agent learns - it takes an action, gets a reward, moves to a new state, and learns from this experience. But here's the thing - if we only learn from recent experiences, our network might forget important things it learned before, or worse, get stuck learning only from very similar experiences.</p>
+            <p>Think about how our agent learns - it takes an action, gets a reward, moves to a new state, and learns from this experience. But here's the thing - if we only learn from recent experiences, our network might forget important things it learned before, or worse, get stuck learning only from very similar experiences.(Not for humans, you stay in the present)</p>
             <p>This is where experience replay comes in. Every time our agent does something, we store a complete memory of that experience as a tuple:</p>
             <blockquote>
                 (current_state, action_taken, reward_received, next_state)
             </blockquote>
             <p>We keep collecting these memories in what we call a replay buffer. Now, instead of just learning from what just happened, we randomly pick experiences from this buffer and learn from them again. It's like our agent is dreaming about past experiences.</p>
-
+            <p>This approach has three big benefits:
+                1. Our agent can learn from rare but important experiences multiple times
+                2. Random sampling makes the training data more independent
+                3. We can learn from successful experiences even after we've moved on to explore different strategies
+                
+                Now here's a caveat - even with experience replay, our agent still just learns which actions give maximum rewards for states. What will happen is once it knows some actions at some state will give rewards, it will become lazy (aka stuck in local minima).
+                
+                That's why we take a value Epsilon with high value initially and decrease it linearly. The idea is that Epsilon amount of time we ignore the max reward and choose action at random for exploration.
+            </p>
             <h2>Conclusion</h2>
             <p>I hope this take on DQL is better stepping stone before you jump to paper or code.</p>
         
