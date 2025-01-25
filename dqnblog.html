@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Q-Networks: A Different Perspective</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Merriweather', serif;
+            color: #2e2e2c;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+        .header {
+            background: #e5e1d2;
+            padding: 2rem 1rem;
+            border-bottom: 1px solid #ccc;
+        }
+        .title {
+            font-family: 'Roboto', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            color: #5a5a57;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+        }
+        .blog-content h2 {
+            font-family: 'Roboto', sans-serif;
+            font-size: 2rem;
+            color: #3a3a3a;
+            margin-top: 2rem;
+        }
+        .blog-content p {
+            margin: 1rem 0;
+        }
+        .blog-content blockquote {
+            font-style: italic;
+            color: #6c6c68;
+            border-left: 4px solid #ccc;
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            background: #f9f8f6;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        .footer {
+            background: #e5e1d2;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid #ccc;
+            border-radius: 15px 15px 0 0;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="title">Deep Q-Networks: A Different Perspective</h1>
+            <p class="subtitle">Exploring reinforcement learning with DQNs</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="blog-content">
+            <h2>Introduction</h2>
+            <p>I am writing this blog to share what I learned from different sources and present it in a way that I didn't find anywhere else. I finally understood what Karpathy meant when he said I like to read code more than papers – "code is the source of truth".</p>
+
+            <h2>What is RL?</h2>
+            <p>Most people explain it with an example of a pet that gets rewards when they do good things. In other words, it's a process of learning actions that get rewards and eventually gets the job done. But with DQN, I think it's easier to understand that DQN isn't about teaching actions that get more rewards. Rather, it's an algorithm that learns what rewards every action gets, and then we prioritize maximizing the rewarding actions in part 2.</p>
+            <p><strong></strong></p>
+            <img src="images/DQN/image_fx_.jpg" alt="Relationship meme - Are we stable?" style="display: block; margin: 1rem auto; max-width: 100%;">
+
+            <h2>Bellman Equation</h2>
+            <p>Starting with the Bellman equation - as I said above, what do we need? We need to know how much reward each action gets with the current given state. Later we start focusing on maximizing the reward.</p>
+            <p>Let's take state S and action a. Now our policy/model is trying to predict that at a given state, using the current policy (itself), what would be the reward if we take all the actions that maximize the rewards.</p>
+            <blockquote>
+                Q(s,a) = total rewards if policy Q is used and all the actions are taken in a way that Q predicted to be most rewarding.
+            
+            <p>Q(s,a) = R₀</p>
+            </blockquote>
+            <p>After it takes the first action, S becomes S1 and a becomes a1, and we got reward from the previous action R0:</p>
+            <blockquote>
+                Q(s,a) = R₀ + Q(S₁,a₁)
+            </blockquote>
+            <p>For mathematical stability and practical use cases:</p>
+            <blockquote>
+                Q(s,a) = R₀ + γ (Q(S₁,a₁))
+            </blockquote>
+            <p>Where γ is the discount factor. Think about how we consider immediate actions and rewards in real life a bit more seriously than later ones. We want to focus more on current rewards, hence we use a discount factor for later rewards. Or you can make γ as 1 to make them equal priority or 0 to make them no priority.</p>
+            <p>This discount factor reflects how we typically value immediate rewards more than future ones. The complete sequence looks like:</p>
+            <ol>
+                <blockquote>
+                    <p>=> Q(s,a) = R₀ + γ(future_rewards)
+                    <p>=> future_rewards = R₁ + γ(more_future_rewards)
+                    <p>=> Q(s,a) = R₀ + γ(R₁ + γ(R₂ + ...))
+                </blockquote>
+                
+            </ol>
+            <p>As I said above, we want the policy to learn to maximize the rewards as well, so we can express it as:</p>
+            <blockquote>
+                Q(s,a) = R₀ + γ × max[Q(s',a')]
+            </blockquote>
+            <p>And this becomes our Bellman equation. This was my way of explaining it intuitively - please refer to other resources for correct mathematical derivation and equations.</p>
+
+            <h2>Taking It Further: Q Learning</h2>
+            <p>Q(s,a) = total rewards if policy Q is used and all actions are taken in a way that Q predicted to be most rewarding.</p>
+            <p>Looking at this again and modifying it for DQN:</p>
+            <p>Q policy takes state and action and learns what actions at this state will get how much total rewards.</p>
+            <p>Let's fix the amount of actions - say 3.</p>
+            <p>Now our Q policy will predict maximum rewards at current state S for all 3 actions:</p>
+            <blockquote>
+                Q → [total_max_rewards_a₁, total_max_rewards_a₂, total_max_rewards_a₃]
+            </blockquote>
+
+            <h2>Neural Network Architecture</h2>
+
+            <img src="images/DQN/dqn-architecture.svg" alt="Relationship meme - Are we stable?" style="display: block; margin: 1rem auto; max-width: 100%;">
+            
+            <p>First, why neural networks? In simple environments, we could create a table with every possible state and its rewards (It's called Q-learning where this Algo comes from). But in real-world problems, like playing Atari games, we have way too many possible states storing billions of them is not feasible. This is where neural networks come in - they can approximate Q-values even for states they've never seen before.</p>
+            <p>Let's break down the network structure:</p>
+            <p>The input layer takes our state. This could be:</p>
+            <ul>
+                <li>Raw pixels from a game screen</li>
+                <li>Sensor readings from a robot</li>
+                <li>Any other information that describes our current situation</li>
+            </ul>
+            <p>Then we have some hidden layers (they're just doing their neural network magic here), and finally, we reach the interesting part - the output layer.</p>
+            <p>The output layer is simple - it has one neuron for each possible action, and each neuron predicts the total future reward for taking that action. This is exactly how DQN implements Q-learning - the neural network outputs a value for each possible action. It makes action selection straightforward (just pick the action with highest predicted reward) and it's computationally efficient (one forward pass gives us Q-values for all actions).</p>
+
+            <h2>Training Process Flow</h2>
+            <p>I want to walk you through how DQN actually learns, step by step. Let’s fit the pieces together:</p>
+            <ol>
+                <li>We start with our current state (like a game screen or sensor readings)</li>
+                <li>Our agent needs to pick an action. Remember that epsilon thing I mentioned? Here's where we use it:
+                    <ul>
+                        <li>Generate a random number between 0 and 1</li>
+                        <li>If it's less than epsilon, pick a random action (exploration)</li>
+                        <li>If it's greater than epsilon, pick the action our network thinks is best (exploitation)</li>
+                    </ul>
+                </li>
+                <li>We take this action in our environment and get two things:
+                    <ul>
+                        <li>An immediate reward (could be points in a game, or even negative for mistakes)</li>
+                        <li>The next state we end up in</li>
+                    </ul>
+                </li>
+                <li>We store this whole experience (current state, action, reward, next state) in our replay buffer</li>
+                <li>Here's where it gets interesting - we don't learn from just this experience
+                    <ul>
+                        <li>We grab a batch of random experiences from our buffer</li>
+                        <li>This gives us more stable learning (I'll explain why in implementation details)</li>
+                    </ul>
+                </li>
+                <li>Now for each experience in our batch, we calculate the loss using our Bellman equation</li>
+                <li>Every few steps, we update our target network (remember that freezing trick I mentioned?)</li>
+            </ol>
+
+            <h2>Math Behind Training</h2>
+            <p>I want to explain how our policy learns to predict better rewards.</p>
+            <blockquote>
+                Q → [total_max_rewards_a₁, total_max_rewards_a₂, total_max_rewards_a₃]
+            </blockquote>
+            <p>We took action based on whatever the max reward was according to policy (let's assume a3 has best predicted rewards). We take action a3 on our environment and get some immediate reward R.</p>
+            <p>Now since we actually don't know what is the target R that we're chasing (since unlike deep learning we don’t know what the ideal result looks like), we try to estimate it using the Bellman equation:</p>
+            <blockquote>
+                Q(s,a) = R₀ + γ × max[Q(s',a')]
+            </blockquote>
+            <p>becomes:</p>
+            <blockquote>
+                target_value = R + γ * max(Q(next_state))
+            </blockquote>
+            <p>Hence the loss becomes:</p>
+            <blockquote>
+                loss = (target_value - predicted_Q)²
+            </blockquote>
+            <p>There's one issue - if we keep changing our target at each step, it becomes unstable for learning. So we use a trick: we freeze the Q policy every few steps and then use that to calculate target value.</p>
+            <blockquote>
+                target_value = R + γ * max(Q_target(s'))
+                loss = (target_value - Q_current(s,a))²
+            </blockquote>
+            <p>Or combined in one equation:</p>
+            <blockquote>
+                loss = (R + γ * max(Q_target(s')) - Q_current(s,a))²
+            </blockquote>
+            <p>That gives us our original equation:</p>
+            <blockquote>
+                Lₐ(θᵢ) = E[(r + γ * max(Q(s', a'; θ⁻)) - Q(s, a; θᵢ))²]
+            </blockquote>
+
+            <h2>Implementation Details</h2>
+            <p>I want to share some practical details for implementing DQN..</p>
+            <p>Why do we use batch training? Imagine trying to learn from just one experience at a time - By training on batches:</p>
+            <ul>
+                <li>Our updates become more stable (less affected by one weird experience)</li>
+                <li>We can use modern GPUs efficiently (they love parallel processing)</li>
+                <li>We get a better estimate of which direction to update our network</li>
+            </ul>
+            <p>Typical batch size? 32 or 64 work well for most problems. Too small and learning is unstable, too large and training becomes slow.</p>
+            <p>About that target network update - this is important. While some implementations do hard updates every few hundred steps, soft updates are really the way to go. Here's why: instead of suddenly copying all weights from our current network to target network (which can cause instability), we slowly blend them.</p>
+            <blockquote>
+                target_network = τ * current_network + (1 - τ) * target_network
+            </blockquote>
+            <p>Where τ is something like 0.001 so we update target with 0.001 of current update network. The idea is it will eventually add up.</p>
+            
+            <p><strong>Are we stable?</strong></p>
+            <img src="images/DQN/stable-the-environment.jpg" alt="Relationship meme - Are we stable?" style="display: block; margin: 1rem auto; max-width: 100%;">
+
+            <h2>Experience Replay Buffer</h2>
+            <p>Think about how our agent learns - it takes an action, gets a reward, moves to a new state, and learns from this experience. But here's the thing - if we only learn from recent experiences, our network might forget important things it learned before, or worse, get stuck learning only from very similar experiences.</p>
+            <p>This is where experience replay comes in. Every time our agent does something, we store a complete memory of that experience as a tuple:</p>
+            <blockquote>
+                (current_state, action_taken, reward_received, next_state)
+            </blockquote>
+            <p>We keep collecting these memories in what we call a replay buffer. Now, instead of just learning from what just happened, we randomly pick experiences from this buffer and learn from them again. It's like our agent is dreaming about past experiences.</p>
+
+            <h2>Conclusion</h2>
+            <p>I hope this take on DQL is better stepping stone before you jump to paper or code.</p>
+        
+            <h2>Resources</h2>
+            <p><a href="https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/dqn_atari.py" target="_blank" rel="noopener noreferrer">Code</a></p>
+            <p><a href="https://arxiv.org/abs/1312.5602" target="_blank" rel="noopener noreferrer">Paper</a></p>
+            <p><a href="https://youtu.be/H1NRNGiS8YU?si=CUyil1Kec_bxdueN" target="_blank" rel="noopener noreferrer">Video</a></p>
+            <p><a href="https://huggingface.co/learn/deep-rl-course/en/unit3/deep-q-network" target="_blank" rel="noopener noreferrer">HuggingFace Blog</a></p>
+            
+            
+        
+        </article>
+    </main>
+
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>Ruchit Patel</p>
+                <div class="social-links">
+                    <a href="https://github.com/rp440" target="_blank" rel="noopener noreferrer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=#e5e1d2>
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                    <a href="https://linkedin.com/in/rp440" target="_blank" rel="noopener noreferrer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e5e1d2">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
