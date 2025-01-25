@@ -237,9 +237,11 @@
                 1. Our agent can learn from rare but important experiences multiple times
                 2. Random sampling makes the training data more independent
                 3. We can learn from successful experiences even after we've moved on to explore different strategies
-                
+            </p>
+            <p>   
                 Now here's a caveat - even with experience replay, our agent still just learns which actions give maximum rewards for states. What will happen is once it knows some actions at some state will give rewards, it will become lazy (aka stuck in local minima).
-                
+            </p>     
+            <p>   
                 That's why we take a value Epsilon with high value initially and decrease it linearly. The idea is that Epsilon amount of time we ignore the max reward and choose action at random for exploration.
             </p>
             <h2>Conclusion</h2>
