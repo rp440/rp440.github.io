@@ -137,7 +137,7 @@
                 <li>Sensor readings from a robot</li>
                 <li>Any other information that describes our current situation</li>
             </ul>
-            <p>Then we have some hidden layers (they're just doing their neural network magic here), and finally, we reach the interesting part - the output layer.</p>
+            <p>Then we have some hidden layers (they're just doing their neural network magic here - the great-dian descent ), and finally, we reach the interesting part - the output layer.</p>
             <p>The output layer is simple - it has one neuron for each possible action, and each neuron predicts the total future reward for taking that action. This is exactly how DQN implements Q-learning - the neural network outputs a value for each possible action. It makes action selection straightforward (just pick the action with highest predicted reward) and it's computationally efficient (one forward pass gives us Q-values for all actions).</p>
 
             <h2>Training Process Flow</h2>
@@ -202,7 +202,7 @@
 
             <h2>Implementation Details</h2>
             <p>I want to share some practical details for implementing DQN..</p>
-            <p>Why do we use batch training? Imagine trying to learn from just one experience at a time - By training on batches:</p>
+            <p>Why do we use batch training? ?(same reason we use it everytime) Imagine trying to learn from just one experience at a time (puff! Humans) - By training on batches:</p>
             <ul>
                 <li>Our updates become more stable (less affected by one weird experience)</li>
                 <li>We can use modern GPUs efficiently (they love parallel processing)</li>
@@ -232,7 +232,7 @@
             <blockquote>
                 (current_state, action_taken, reward_received, next_state)
             </blockquote>
-            <p>We keep collecting these memories in what we call a replay buffer. Now, instead of just learning from what just happened, we randomly pick experiences from this buffer and learn from them again. It's like our agent is dreaming about past experiences.</p>
+            <p>We keep collecting these memories in what we call a replay buffer. Now, instead of just learning from what just happened, we randomly pick experiences from this buffer and learn from them again. It's like our agent is dreaming about past experiences.(Intense nightmare of not waking up in math exam).</p>
             <p>This approach has three big benefits:
                 1. Our agent can learn from rare but important experiences multiple times
                 2. Random sampling makes the training data more independent
