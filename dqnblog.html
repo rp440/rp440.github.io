@@ -233,6 +233,10 @@
                 (current_state, action_taken, reward_received, next_state)
             </blockquote>
             <p>We keep collecting these memories in what we call a replay buffer. Now, instead of just learning from what just happened, we randomly pick experiences from this buffer and learn from them again. It's like our agent is dreaming about past experiences.(Intense nightmare of not waking up in math exam).</p>
+
+            <p>
+                Why is this random sampling so important? In real life, consecutive experiences are usually very similar - imagine your agent exploring one part of the game map. If we only learned from consecutive experiences, our network might overfit to that specific situation. Random sampling breaks these temporal correlations and gives us a more diverse learning experience.
+            </p>
             <p>This approach has three big benefits:
                 1. Our agent can learn from rare but important experiences multiple times
                 2. Random sampling makes the training data more independent
